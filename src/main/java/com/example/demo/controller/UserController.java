@@ -4,16 +4,18 @@ import com.example.demo.dto.request.ApiResponse;
 import com.example.demo.dto.request.UserCreationRequest;
 import com.example.demo.dto.request.UserUpdateRequest;
 import com.example.demo.dto.response.UserResponse;
-import com.example.demo.entity.User;
 import com.example.demo.service.UserService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
 
+@Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -21,15 +23,22 @@ public class UserController {
     private UserService userService;
 
     @PostMapping
-    ApiResponse<User> createUser (@RequestBody @Valid UserCreationRequest request){
-        ApiResponse<User> response = new ApiResponse<>();
+    ApiResponse<UserResponse> createUser (@RequestBody @Valid UserCreationRequest request){
+        ApiResponse<UserResponse> response = new ApiResponse<>();
         response.setData(userService.createRequest(request));
         return response;
     }
 
     @GetMapping
-    List<User> getUsers (){
-        return userService.getAllUsers();
+    ApiResponse<List<UserResponse>> getUsers (){
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        log.info("UserName : {}", authentication.getName());
+        authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
+
+        return ApiResponse.<List<UserResponse>>builder()
+                .data(userService.getAllUsers())
+                .build();
     }
 
     @GetMapping("/{userId}")
@@ -37,8 +46,15 @@ public class UserController {
         return userService.getUserByID(userId);
     }
 
+    @GetMapping("/myInfo")
+    ApiResponse<UserResponse> getMyInfo(){
+        return ApiResponse.<UserResponse>builder()
+                .data(userService.getMyInfo())
+                .build();
+    }
+
     @PutMapping("/{userId}")
-    User updateUser(@PathVariable UUID userId,@RequestBody UserUpdateRequest request){
+    UserResponse updateUser(@PathVariable UUID userId,@RequestBody UserUpdateRequest request){
         return userService.updateUser(userId,request);
     }
 
