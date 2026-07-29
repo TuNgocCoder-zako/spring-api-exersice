@@ -9,20 +9,19 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users")
+@Table(name = "roles")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class User {
+public class Role {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-     UUID id;
-     String userName;
-     String password;
-     String firstName;
-     String lastName;
-     LocalDate birthDate;
-     Set<String> roles;
+     String name;
+     String description;
+
+     @ManyToMany
+     @ToString.Exclude
+     @EqualsAndHashCode.Exclude
+     Set<Permission> permissions;
 }

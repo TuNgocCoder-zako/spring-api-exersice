@@ -6,6 +6,9 @@ import com.example.demo.dto.request.UserUpdateRequest;
 import com.example.demo.dto.response.UserResponse;
 import com.example.demo.service.UserService;
 import jakarta.validation.Valid;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,9 +21,11 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping("/users")
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserController {
     @Autowired
-    private UserService userService;
+    UserService userService;
 
     @PostMapping
     ApiResponse<UserResponse> createUser (@RequestBody @Valid UserCreationRequest request){

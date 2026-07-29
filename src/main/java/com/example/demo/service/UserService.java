@@ -5,9 +5,10 @@ import com.example.demo.dto.request.UserUpdateRequest;
 import com.example.demo.dto.response.UserResponse;
 import com.example.demo.entity.User;
 import com.example.demo.enums.Role;
-import com.example.demo.exception.AppExeption;
+import com.example.demo.exception.AppException;
 import com.example.demo.exception.ErrorCode;
 import com.example.demo.mapper.UserMapper;
+import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -32,16 +33,20 @@ public class UserService {
      UserRepository userRepository;
      UserMapper userMapper;
      PasswordEncoder passwordEncoder;
+     RoleRepository roleRepository;
 
     public UserResponse createRequest(UserCreationRequest request) {
         if (userRepository.existsByUserName(request.getUserName()))
-            throw new AppExeption(ErrorCode.USER_EXIT);
+            throw new AppException(ErrorCode.USER_EXIT);
 
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        HashSet<String> roles = new HashSet<>();
-        roles.add(Role.USER.name());
+        var userRole = roleRepository.findById(Role.USER.name())
+                .orElseThrow(() -> new RuntimeException("Role USER not found"));
+
+        HashSet<com.example.demo.entity.Role> roles = new HashSet<>();
+        roles.add(userRole);
         user.setRoles(roles);
 
         return userMapper.userToResponse(userRepository.save(user));
@@ -52,7 +57,7 @@ public class UserService {
         String name = context.getAuthentication().getName();
 
         User user = userRepository.findByUserName(name)
-                .orElseThrow(()-> new AppExeption(ErrorCode.USER_NOT_EXIT));
+                .orElseThrow(()-> new AppException(ErrorCode.USER_NOT_EXIT));
 
         return userMapper.userToResponse(user);
     }
@@ -60,10 +65,18 @@ public class UserService {
     public UserResponse updateUser(UUID userId,UserUpdateRequest request) {
         User user = userRepository.findById(userId).orElseThrow(()-> new RuntimeException("User not found!"));
         userMapper.updateUser(user, request);
+
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        var roles = roleRepository.findAllById(request.getRoles());
+        user.setRoles(new HashSet<>(roles));
+
         return userMapper.userToResponse(userRepository.save(user));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('APPROVE_POST')")
     public List<UserResponse> getAllUsers() {
         log.info("In method get users");
         return userRepository.findAll().stream()

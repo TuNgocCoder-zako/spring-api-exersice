@@ -2,6 +2,7 @@ package com.example.demo.configuration;
 
 import com.example.demo.entity.User;
 import com.example.demo.enums.Role;
+import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -20,13 +21,31 @@ import java.util.HashSet;
 @Slf4j
 public class ApplicationInitConfig {
     PasswordEncoder passwordEncoder;
+    RoleRepository roleRepository;
 
     @Bean
     ApplicationRunner initApplicationRunner(UserRepository userRepository) {
         return args -> {
+            // Create default roles in db if they don't exist
+            if (!roleRepository.existsById(Role.USER.name())) {
+                roleRepository.save(com.example.demo.entity.Role.builder()
+                        .name(Role.USER.name())
+                        .description("User role")
+                        .build());
+            }
+            if (!roleRepository.existsById(Role.ADMIN.name())) {
+                roleRepository.save(com.example.demo.entity.Role.builder()
+                        .name(Role.ADMIN.name())
+                        .description("Admin role")
+                        .build());
+            }
+
             if(userRepository.findByUserName("admin").isEmpty()) {
-                var roles = new HashSet<String>();
-                roles.add(Role.ADMIN.name());
+                com.example.demo.entity.Role adminRole = roleRepository.findById(Role.ADMIN.name())
+                        .orElseThrow(() -> new RuntimeException("Admin role not found"));
+
+                var roles = new HashSet<com.example.demo.entity.Role>();
+                roles.add(adminRole);
 
                 User user = User.builder()
                         .userName("admin")

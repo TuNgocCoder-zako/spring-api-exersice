@@ -2,7 +2,7 @@ spring:
   application:
     name: demo
   datasource:
-    url: jdbc:mysql://localhost:3306/Demo?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/demo?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -18,3 +18,6 @@ spring:
 
 jwt:
   signerKey: "9j8FvKmXz1WbQ2dE5hT6Y7uI8oKpL0mN1aBsCdEfGhI=abcdefghijklmnopqrstuvwxyz123456"
+  #Thiết lập thời gian của JWT tùy thuộc vào hệ thống
+  valid-duration: 3600 # in second
+  refreshable-duration: 36000 #in second
