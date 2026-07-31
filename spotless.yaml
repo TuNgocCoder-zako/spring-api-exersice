@@ -1,0 +1,12 @@
+# spotless.yaml
+java:
+  removeUnusedImports: {}
+  toggleOffOn: {}
+  trimTrailingWhitespace: {}
+  endWithNewline: {}
+  indent:
+    tabs: true
+    spacesPerTab: 4
+  palantirJavaFormat: {}
+  importOrder:
+    order: java,jakarta,org,com,com.diffplug,

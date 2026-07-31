@@ -1,8 +1,9 @@
 package com.example.demo.exception;
 
-import com.example.demo.dto.request.ApiResponse;
-import com.example.demo.dto.response.UserResponse;
+import java.util.Map;
+
 import jakarta.validation.ConstraintViolation;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -10,8 +11,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.util.Map;
-import java.util.Objects;
+import com.example.demo.dto.request.ApiResponse;
+import com.example.demo.dto.response.UserResponse;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -55,7 +56,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         String enumKey = ex.getFieldError().getDefaultMessage();
         ErrorCode errorCode = ErrorCode.INVALID_MESSAGE;
-        
+
         try {
             errorCode = ErrorCode.valueOf(enumKey);
         } catch (IllegalArgumentException e) {
@@ -64,8 +65,8 @@ public class GlobalExceptionHandler {
 
         Map<String, Object> attributes = null;
         try {
-            var constraintViolation = ex.getBindingResult().getAllErrors()
-                    .getFirst().unwrap(ConstraintViolation.class);
+            var constraintViolation =
+                    ex.getBindingResult().getAllErrors().getFirst().unwrap(ConstraintViolation.class);
             attributes = constraintViolation.getConstraintDescriptor().getAttributes();
         } catch (Exception e) {
             // ignore or fallback if unwrap fails
@@ -73,7 +74,7 @@ public class GlobalExceptionHandler {
 
         ApiResponse apiResponse = new ApiResponse();
         apiResponse.setCode(errorCode.getCode());
-        
+
         String message = errorCode.getMessage();
         if (attributes != null) {
             message = mapAttribute(message, attributes);

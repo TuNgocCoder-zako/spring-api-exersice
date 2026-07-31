@@ -1,12 +1,9 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDate;
-import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @Table(name = "permissions")
@@ -17,6 +14,7 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Permission {
     @Id
-     String name;
-     String description;
+    String name;
+
+    String description;
 }

@@ -1,19 +1,22 @@
 package com.example.demo.configuration;
 
-import com.example.demo.dto.request.ApiResponse;
-import com.example.demo.exception.ErrorCode;
+import java.io.IOException;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
-import java.io.IOException;
+import com.example.demo.dto.request.ApiResponse;
+import com.example.demo.exception.ErrorCode;
 
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+    public void commence(
+            HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException, ServletException {
         ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
 
@@ -25,7 +28,8 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 .message(errorCode.getMessage())
                 .build();
 
-        String json = String.format("{\"code\":%d,\"message\":\"%s\"}", apiResponse.getCode(), apiResponse.getMessage());
+        String json =
+                String.format("{\"code\":%d,\"message\":\"%s\"}", apiResponse.getCode(), apiResponse.getMessage());
 
         response.getWriter().write(json);
         response.flushBuffer();

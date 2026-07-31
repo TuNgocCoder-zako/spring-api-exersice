@@ -1,19 +1,22 @@
 package com.example.demo.configuration;
 
-import com.example.demo.entity.User;
-import com.example.demo.enums.Role;
-import com.example.demo.repository.RoleRepository;
-import com.example.demo.repository.UserRepository;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashSet;
+
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.HashSet;
+import com.example.demo.entity.User;
+import com.example.demo.enums.Role;
+import com.example.demo.repository.RoleRepository;
+import com.example.demo.repository.UserRepository;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @RequiredArgsConstructor
@@ -24,8 +27,10 @@ public class ApplicationInitConfig {
     RoleRepository roleRepository;
 
     @Bean
+    @ConditionalOnProperty(name = "app.init-db", havingValue = "true", matchIfMissing = true)
     ApplicationRunner initApplicationRunner(UserRepository userRepository) {
         return args -> {
+            log.info("init ApplicationRunner.............");
             // Create default roles in db if they don't exist
             if (!roleRepository.existsById(Role.USER.name())) {
                 roleRepository.save(com.example.demo.entity.Role.builder()
@@ -40,8 +45,9 @@ public class ApplicationInitConfig {
                         .build());
             }
 
-            if(userRepository.findByUserName("admin").isEmpty()) {
-                com.example.demo.entity.Role adminRole = roleRepository.findById(Role.ADMIN.name())
+            if (userRepository.findByUserName("admin").isEmpty()) {
+                com.example.demo.entity.Role adminRole = roleRepository
+                        .findById(Role.ADMIN.name())
                         .orElseThrow(() -> new RuntimeException("Admin role not found"));
 
                 var roles = new HashSet<com.example.demo.entity.Role>();

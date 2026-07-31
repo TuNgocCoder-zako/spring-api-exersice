@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.1.0</version>
+		<version>3.4.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
@@ -27,8 +27,11 @@
 		<url/>
 	</scm>
 	<properties>
-		<java.version>25</java.version>
+		<java.version>21</java.version>
+		<lombok.version>1.18.38</lombok.version>
+		<spotless.version>2.44.3</spotless.version>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -40,7 +43,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-webmvc</artifactId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -54,17 +57,21 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.36</version> <!-- Thêm cụ thể version mới nhất vào đây -->
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-webmvc-test</artifactId>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>2.2.224</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -74,7 +81,12 @@
 		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
-			<version>1.6.0.RC1</version>
+			<version>1.6.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -103,22 +115,18 @@
 							<goal>compile</goal>
 						</goals>
 						<configuration>
+							<release>21</release>
 							<annotationProcessorPaths>
 								<path>
 									<groupId>org.projectlombok</groupId>
 									<artifactId>lombok</artifactId>
+									<version>1.18.38</version>
 								</path>
-								<!-- THÊM MỚI: Processor của MapStruct -->
+								<!-- Processor của MapStruct -->
 								<path>
 									<groupId>org.mapstruct</groupId>
 									<artifactId>mapstruct-processor</artifactId>
-									<version>1.6.0.RC1</version>
-								</path>
-								<!-- THÊM MỚI: Cầu nối Lombok và MapStruct -->
-								<path>
-									<groupId>org.projectlombok</groupId>
-									<artifactId>lombok-mapstruct-binding</artifactId>
-									<version>0.2.0</version>
+									<version>1.6.3</version>
 								</path>
 							</annotationProcessorPaths>
 						</configuration>
@@ -130,25 +138,96 @@
 							<goal>testCompile</goal>
 						</goals>
 						<configuration>
+							<release>21</release>
 							<annotationProcessorPaths>
 								<path>
 									<groupId>org.projectlombok</groupId>
 									<artifactId>lombok</artifactId>
+									<version>1.18.38</version>
 								</path>
-								<!-- THÊM MỚI: Processor của MapStruct cho phần Test -->
+								<!-- Processor của MapStruct cho phần Test -->
 								<path>
 									<groupId>org.mapstruct</groupId>
 									<artifactId>mapstruct-processor</artifactId>
-									<version>1.6.0.RC1</version>
-								</path>
-								<!-- THÊM MỚI: Cầu nối cho phần Test -->
-								<path>
-									<groupId>org.projectlombok</groupId>
-									<artifactId>lombok-mapstruct-binding</artifactId>
-									<version>0.2.0</version>
+									<version>1.6.3</version>
 								</path>
 							</annotationProcessorPaths>
 						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.12</version>
+				<configuration>
+					<excludes>
+						<exclude>com/example/demo/dto/**</exclude>
+						<exclude>com/example/demo/entity/**</exclude>
+						<exclude>com/example/demo/configuration/**</exclude>
+						<exclude>com/example/demo/mapper/**</exclude>
+					</excludes>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.5.6</version>
+				<configuration>
+					<argLine>@{argLine} -Dnet.bytebuddy.experimental=true</argLine>
+				</configuration>
+			</plugin>
+
+			<!-- Thêm Spotless Plugin ở đây -->
+			<plugin>
+				<groupId>com.diffplug.spotless</groupId>
+				<artifactId>spotless-maven-plugin</artifactId>
+				<version>${spotless.version}</version>
+				<configuration>
+					<java>
+						<includes>
+							<include>src/main/java/**/*.java</include>
+							<include>src/test/java/**/*.java</include>
+						</includes>
+
+						<removeUnusedImports>
+							<engine>cleanthat-javaparser-unnecessaryimport</engine>
+						</removeUnusedImports>
+						<toggleOffOn />
+						<trimTrailingWhitespace />
+						<endWithNewline />
+						<indent>
+							<tabs>true</tabs>
+							<spacesPerTab>4</spacesPerTab>
+						</indent>
+						<palantirJavaFormat>
+							<version>2.71.0</version>
+						</palantirJavaFormat>
+						<importOrder>
+							<order>java,jakarta,org,com,com.diffplug</order>
+						</importOrder>
+					</java>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>apply</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>
