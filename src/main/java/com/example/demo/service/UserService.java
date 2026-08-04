@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -39,8 +40,6 @@ public class UserService {
     public UserResponse createRequest(UserCreationRequest request) {
         log.info("Service: Create User");
 
-        if (userRepository.existsByUserName(request.getUserName())) throw new AppException(ErrorCode.USER_EXIT);
-
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
@@ -52,7 +51,13 @@ public class UserService {
         roles.add(userRole);
         user.setRoles(roles);
 
-        return userMapper.userToResponse(userRepository.save(user));
+        try{
+            user=userRepository.save(user);
+        }catch (DataIntegrityViolationException ex){
+            throw new AppException(ErrorCode.USER_EXIT);
+        }
+
+        return userMapper.userToResponse(user);
     }
 
     public UserResponse getMyInfo() {
