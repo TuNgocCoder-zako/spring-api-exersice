@@ -51,9 +51,9 @@ public class UserService {
         roles.add(userRole);
         user.setRoles(roles);
 
-        try{
-            user=userRepository.save(user);
-        }catch (DataIntegrityViolationException ex){
+        try {
+            user = userRepository.save(user);
+        } catch (DataIntegrityViolationException ex) {
             throw new AppException(ErrorCode.USER_EXIT);
         }
 

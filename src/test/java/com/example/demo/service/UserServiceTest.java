@@ -94,7 +94,11 @@ public class UserServiceTest {
     @Test
     void createUser_userExisted_fail() {
         // GIVEN
-        when(userRepository.existsByUserName(anyString())).thenReturn(true);
+        when(roleRepository.findById(anyString()))
+                .thenReturn(Optional.of(
+                        Role.builder().name("USER").description("User role").build()));
+        when(userRepository.save(any()))
+                .thenThrow(new org.springframework.dao.DataIntegrityViolationException("Duplicate entry"));
 
         // WHEN
         var exception = assertThrows(AppException.class, () -> userService.createRequest(request));
